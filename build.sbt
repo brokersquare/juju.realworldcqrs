@@ -13,12 +13,16 @@ resolvers ++= Seq(
 )
 
 libraryDependencies ++= {
-  val Juju           = "2f668f6"
+  val Juju           = "791d73075a"
   val Akka           = "2.4.1"
   val ScalaLogging   = "3.1.0"
+  val ReactiveX      = "0.25.0"
   Seq(
     "com.github.brokersquare" % "juju" % Juju intransitive(),
     "com.typesafe.akka" %% "akka-actor" % Akka,
-    "com.typesafe.scala-logging" %% "scala-logging" % ScalaLogging
+    "com.typesafe.akka" %% "akka-persistence" % Akka/*,
+    "com.typesafe.akka" %% "akka-slf4j" % Akka,
+    "io.reactivex" %% "rxscala" % ReactiveX,
+    "com.typesafe.scala-logging" %% "scala-logging" % ScalaLogging*/
   )
 }
