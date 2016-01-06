@@ -38,7 +38,7 @@ trait Bootable {
     }))
   }
 
-  //took from http://patorjk.com/software/taag/
+  //taken from http://patorjk.com/software/taag/
   def banner = """
 ___________________________________________________        
  _______/\\\_____________________/\\\_______________       

@@ -15,10 +15,11 @@ trait BackendApp extends juju.kernel.Bootable {
   def appname: String = getClass.getSimpleName.toLowerCase.replace("backendapp", "")
 
   val config: Config = ConfigFactory.load()
+  val timeout = config getDuration(s"backend.timeout",TimeUnit.SECONDS) seconds
+
   implicit val system = ActorSystem(appname, config)
   var ref : ActorRef = ActorRef.noSender
 
-  val timeout = config getDuration(s"$appname.timeout",TimeUnit.SECONDS) seconds
 
   def appProp: Props
 
