@@ -12,10 +12,10 @@ import juju.domain.resolvers.ByConventions
 import scala.reflect.ClassTag
 
 trait DefaultBackendConfig extends BackendConfig {
-  override def appname: String = getClass.getSimpleName.toLowerCase.replace("backend", "")
+  override def appname: String = this.getClass.getSimpleName.toLowerCase.replace("app", "").replace("$", "")
 
-  override val config: Config = ConfigFactory.load()
-  override val timeout = config getDuration("backend.timeout",TimeUnit.SECONDS) seconds
+  override val config: Config = ConfigFactory.load().withFallback(ConfigFactory.parseString("juju.timeout = 5s"))
+  override val timeout = config getDuration("juju.timeout",TimeUnit.SECONDS) seconds
 
   override implicit def aggregateFactory[A <: AggregateRoot[_] : ClassTag]: AggregateRootFactory[A] = ByConventions.aggregateFactory[A]()
   override implicit def aggregateIdResolution[A <: AggregateRoot[_] : ClassTag]: AggregateIdResolution[A] = ByConventions.aggregateIdResolution[A]()

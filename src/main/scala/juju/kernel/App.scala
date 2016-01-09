@@ -8,14 +8,18 @@ import juju.messages.Boot
 
 import scala.concurrent.Await
 
-trait BackendApp extends juju.kernel.Bootable {
+trait App extends juju.kernel.Bootable {
   import scala.concurrent.duration._
   import akka.pattern.gracefulStop
 
-  def appname: String = getClass.getSimpleName.toLowerCase.replace("backendapp", "")
+  def appname: String = this.getClass.getSimpleName.toLowerCase.replace("app", "").replace("$", "")
 
   val config: Config = ConfigFactory.load()
-  val timeout = config getDuration(s"backend.timeout",TimeUnit.SECONDS) seconds
+    .withFallback(ConfigFactory.parseString("juju.timeout = 5s"))
+    .withFallback(ConfigFactory.parseString("service.host = localhost"))
+    .withFallback(ConfigFactory.parseString("service.port = 8080"))
+
+  val timeout = config getDuration(s"juju.timeout",TimeUnit.SECONDS) seconds
 
   implicit val system = ActorSystem(appname, config)
   var ref : ActorRef = ActorRef.noSender
