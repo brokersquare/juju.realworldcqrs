@@ -12,7 +12,7 @@ import juju.domain.resolvers.ByConventions
 import scala.reflect.ClassTag
 
 trait DefaultBackendConfig extends BackendConfig {
-  override def appname: String = this.getClass.getSimpleName.toLowerCase.replace("app", "").replace("$", "")
+  //override def appname: String = this.getClass.getSimpleName.toLowerCase.replace("app", "").replace("$", "")
 
   override val config: Config = ConfigFactory.load().withFallback(ConfigFactory.parseString("juju.timeout = 5s"))
   override val timeout = config getDuration("juju.timeout",TimeUnit.SECONDS) seconds
