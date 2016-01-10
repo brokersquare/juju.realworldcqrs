@@ -1,11 +1,17 @@
 package juju.kernel
 
+import java.util.concurrent.TimeUnit
+
 import akka.actor._
 import akka.pattern._
-import juju.infrastructure.{DomainEventsSubscribed, EventBus, HandlersRegistered, Node}
+import juju.domain.Saga.SagaHandlersResolution
+import juju.domain.{Saga, AggregateRoot}
+import juju.domain.AggregateRoot.AggregateHandlersResolution
+import juju.infrastructure._
 import juju.messages.{SystemIsUp, WakeUp}
 
 import scala.concurrent.Future
+import scala.concurrent.duration._
 import scala.reflect.ClassTag
 
 trait Backend extends Actor with ActorLogging with Stash with Node {
@@ -15,12 +21,21 @@ trait Backend extends Actor with ActorLogging with Stash with Node {
 
   implicit val system : ActorSystem = context.system
   implicit val dispatcher = system.dispatcher // The ExecutionContext that will be used
-  implicit val askTimeout: akka.util.Timeout = timeout
+
+  val config = system.settings.config
+  implicit val timeout: akka.util.Timeout = config getDuration("juju.timeout",TimeUnit.SECONDS) seconds
 
   val bus = context.actorOf(EventBus.props(), "bus")
 
-  def registerHandlers(bus: ActorRef): Future[Seq[HandlersRegistered]]
-  def registerSagas(bus: ActorRef): Future[Seq[DomainEventsSubscribed]]
+  private var aggregates : Set[RegisterHandlers[_]] = Set.empty
+  protected def registerAggregate[A <: AggregateRoot[_] : OfficeFactory : AggregateHandlersResolution]() = {
+    aggregates = aggregates + RegisterHandlers[A]
+  }
+
+  private var sagas : Set[RegisterSaga[_]] = Set.empty
+  protected def registerSaga[S <: Saga : SagaRouterFactory : SagaHandlersResolution]() = {
+    sagas = sagas + RegisterSaga[S]
+  }
 
   def waitForBoot: Actor.Receive = {
     case Boot =>
@@ -63,5 +78,13 @@ trait Backend extends Actor with ActorLogging with Stash with Node {
         bus ! message
       }
     }
+  }
+
+  private def registerHandlers(bus: ActorRef): Future[Seq[HandlersRegistered]] = {
+    Future.sequence(aggregates.toSeq map (m => (bus ? m) map (_.asInstanceOf[HandlersRegistered])))
+  }
+
+  private def registerSagas(bus: ActorRef): Future[Seq[DomainEventsSubscribed]] = {
+    Future.sequence(sagas.toSeq map (m => (bus ? m) map (_.asInstanceOf[DomainEventsSubscribed])))
   }
 }

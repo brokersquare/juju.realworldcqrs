@@ -1,5 +1,5 @@
 package juju.kernel
-
+/*
 import java.util.concurrent.TimeUnit
 
 import akka.actor.{ActorRef, ActorSystem, Props}
@@ -48,3 +48,4 @@ trait App extends juju.kernel.Bootable {
     log(s"$appname is down")
   }
 }
+*/

@@ -1,13 +1,15 @@
 package juju.kernel
 
-import akka.actor.{Props, Actor}
+import akka.actor.{Actor, Props}
+
+import scala.reflect.ClassTag
 
 trait RoleApp {
   actor: Actor =>
-  val appname: String
-  val role: String
+  def appname: String
+  def role: String
 }
 
-trait RoleAppPropsFactory[A <: RoleApp] {
-  def props(appname: String, role :String) : Props
+abstract class RoleAppPropsFactory[A <: RoleApp : ClassTag] {
+  def props(appname: String, role :String) : Props = Props(implicitly[ClassTag[A]].runtimeClass, appname, role)
 }

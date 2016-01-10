@@ -1,5 +1,5 @@
 package juju.realworld.app
-
+/*
 import akka.actor._
 import akka.io.IO
 import juju.infrastructure.local.LocalNode
@@ -42,4 +42,4 @@ object RealWorldApp extends juju.kernel.App {
     IO(Http) ! Http.Bind(frontend, interface = host, port = port)
   }
 }
-
+*/

@@ -29,7 +29,7 @@ trait Bootstrapper extends juju.kernel.Bootable {
     roleApps = (roleApps filterNot (role == _._1)) + (role ->(propsFactory, config))
   }
 
-  def readRoles(): List[String] = {
+  def readClusterRoles(): List[String] = {
     import scala.collection.JavaConverters._
     val configuredRoles = appConfig.getStringList("akka.cluster.roles").asScala.toList
     configuredRoles match {
@@ -46,7 +46,7 @@ trait Bootstrapper extends juju.kernel.Bootable {
     log(s"$appname is up")
     log(s"registered apps of roles '${roleApps.keys.mkString(",")}'")
 
-    val roles = readRoles()
+    val roles = readClusterRoles()
 
     val bootRoles = Future.sequence(roles map bootRoleApp)
 
@@ -108,6 +108,6 @@ trait Bootstrapper extends juju.kernel.Bootable {
               Success(name)
           }
         }
-      
+
 
 }
