@@ -1,6 +1,9 @@
 package juju.kernel
 
-import akka.actor.ActorSystem
+import java.util.concurrent.TimeUnit
+
+import akka.actor.{ActorRef, ActorSystem}
+import akka.pattern.gracefulStop
 import com.typesafe.config.{Config, ConfigFactory}
 import juju.messages.Boot
 
@@ -8,16 +11,19 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, Future}
 import scala.util.{Failure, Success, Try}
+import scala.concurrent.duration._
 
 trait Bootstrapper extends juju.kernel.Bootable {
   def appname: String = this.getClass.getSimpleName.toLowerCase.replace("bootstrapper", "").replace("$", "")
 
   private var roleApps: Map[String, (RoleAppPropsFactory[_ <: RoleApp], Config)] = Map.empty
-  private var roleSystems: Map[String, Try[ActorSystem]] = Map.empty
+  private var roleSystems: Map[String, Try[(ActorSystem, ActorRef)]] = Map.empty
 
   private lazy val appConfig = ConfigFactory.load()
     .withFallback(ConfigFactory.parseString("juju.timeout = 5s"))
     .withFallback(ConfigFactory.parseString("akka.cluster.roles = []"))
+
+  def timeout = appConfig getDuration("juju.timeout",TimeUnit.SECONDS) seconds
 
   def registerApp(role: String, propsFactory: RoleAppPropsFactory[_ <: RoleApp], config: Config = appConfig): Unit = {
     roleApps = (roleApps filterNot (role == _._1)) + (role ->(propsFactory, config))
@@ -51,7 +57,7 @@ trait Bootstrapper extends juju.kernel.Bootable {
 
     roleSystems foreach { rs =>
       rs._2 match {
-        case Success(s) => log(s"system '${s.name}' of role '${rs._1}' is up and running")
+        case Success((s, _)) => log(s"system '${s.name}' of role '${rs._1}' is up and running")
         case Failure(ex) => log(s"cannot start role '${rs._1}' due to ${ex.getMessage}")
       }
     }
@@ -78,7 +84,7 @@ trait Bootstrapper extends juju.kernel.Bootable {
     log(s"$appname is down")
   }
 
-  private def bootRoleApp(role: String): Future[Try[ActorSystem]] = {
+  private def bootRoleApp(role: String): Future[Try[(ActorSystem, ActorRef)]] = {
     import scala.language.existentials
     Future {
       Try {
@@ -87,18 +93,21 @@ trait Bootstrapper extends juju.kernel.Bootable {
         val props = factory.props(appname, role)
         val app = system.actorOf(props)
         app ! Boot
-        system
+        (system, app)
       }
     }
   }
 
-  private def stopApp(trySystem: Try[ActorSystem]): Future[Try[String]] =
+  private def stopApp(trySystem: Try[(ActorSystem, ActorRef)]): Future[Try[String]] =
     trySystem match {
         case Failure(ex) => Future(Failure(ex))
-        case Success(system) => {
-          val name = system.name
-          system.whenTerminated.map(t=>Success(name))
+        case Success((system, app)) =>
+          gracefulStop(app, timeout) map { case _ =>
+            val name = system.name
+            system.whenTerminated.map(t=>Success(name))
+              Success(name)
+          }
         }
-      }
+      
 
 }
