@@ -14,7 +14,7 @@ resolvers ++= Seq(
 )
 
 libraryDependencies ++= {
-  val Juju           = "791d73075a"
+  val Juju           = "4bff46b090"
   val ScalaReflect   = "2.11.7"
   val Akka           = "2.4.1"
   val Spray          = "1.3.3"
