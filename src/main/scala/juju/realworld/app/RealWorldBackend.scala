@@ -1,7 +1,7 @@
 package juju.realworld.app
 
-import juju.kernel.{Backend, DefaultBackendConfig}
-import realworld.domain.{OrderProcessor, Book, Order, Manager}
+import juju.kernel.backend.{Backend, DefaultBackendConfig}
+import realworld.domain.{Book, Manager, Order, OrderProcessor}
 
 abstract class RealWorldBackend extends Backend with DefaultBackendConfig {
 

@@ -14,19 +14,23 @@ import scala.util.{Failure, Success, Try}
 import scala.concurrent.duration._
 
 trait Bootstrapper extends juju.kernel.Bootable {
+  type AfterAppCreation = (ActorSystem, ActorRef) => Unit
+
   def appname: String = this.getClass.getSimpleName.toLowerCase.replace("bootstrapper", "").replace("$", "")
 
-  private var roleApps: Map[String, (RoleAppPropsFactory[_ <: RoleApp], Config)] = Map.empty
+  private var roleApps: Map[String, (RoleAppPropsFactory[_ <: RoleApp], Config, AfterAppCreation)] = Map.empty
   private var roleSystems: Map[String, Try[(ActorSystem, ActorRef)]] = Map.empty
 
   private lazy val appConfig = ConfigFactory.load()
     .withFallback(ConfigFactory.parseString("juju.timeout = 5s"))
     .withFallback(ConfigFactory.parseString("akka.cluster.roles = []"))
 
+  protected def defaultConfig = appConfig
+
   def timeout = appConfig getDuration("juju.timeout",TimeUnit.SECONDS) seconds
 
-  def registerApp(role: String, propsFactory: RoleAppPropsFactory[_ <: RoleApp], config: Config = appConfig): Unit = {
-    roleApps = (roleApps filterNot (role == _._1)) + (role ->(propsFactory, config))
+  def registerApp(role: String, propsFactory: RoleAppPropsFactory[_ <: RoleApp], config: Config = appConfig, afterAppCreation: AfterAppCreation = (_, app) => app ! Boot): Unit = {
+    roleApps = (roleApps filterNot (role == _._1)) + (role ->(propsFactory, config, afterAppCreation))
   }
 
   def readClusterRoles(): List[String] = {
@@ -88,11 +92,11 @@ trait Bootstrapper extends juju.kernel.Bootable {
     import scala.language.existentials
     Future {
       Try {
-        val (factory : RoleAppPropsFactory[_], config: Config) = roleApps get role get
+        val (factory : RoleAppPropsFactory[_], config: Config, afterAppCreation) = roleApps get role get
         val system = ActorSystem(s"${appname}_$role", config)
         val props = factory.props(appname, role)
         val app = system.actorOf(props)
-        app ! Boot
+        afterAppCreation(system, app)
         (system, app)
       }
     }

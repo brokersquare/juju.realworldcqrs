@@ -1,4 +1,4 @@
-package juju.kernel
+package juju.kernel.backend
 
 import juju.domain.AggregateRoot.{AggregateHandlersResolution, AggregateIdResolution}
 import juju.domain.Saga.{SagaCorrelationIdResolution, SagaHandlersResolution}

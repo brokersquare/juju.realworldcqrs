@@ -1,12 +1,12 @@
-package juju.kernel
+package juju.kernel.backend
 
 import java.util.concurrent.TimeUnit
 
 import akka.actor._
 import akka.pattern._
-import juju.domain.Saga.SagaHandlersResolution
-import juju.domain.{Saga, AggregateRoot}
 import juju.domain.AggregateRoot.AggregateHandlersResolution
+import juju.domain.Saga.SagaHandlersResolution
+import juju.domain.{AggregateRoot, Saga}
 import juju.infrastructure._
 import juju.messages.{SystemIsUp, WakeUp}
 
