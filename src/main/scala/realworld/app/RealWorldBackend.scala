@@ -1,4 +1,4 @@
-package juju.realworld.app
+package realworld.app
 
 import juju.kernel.backend.{Backend, DefaultBackendConfig}
 import realworld.domain.{Book, Manager, Order, OrderProcessor}

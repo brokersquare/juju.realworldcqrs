@@ -1,11 +1,11 @@
-package juju.realworld.app
+package realworld.app
 
-import akka.actor.{Actor, ActorLogging}
+import akka.actor.{Props, Actor, ActorRef, ActorLogging}
 import akka.io.IO
 import com.typesafe.config.ConfigFactory
 import juju.infrastructure.local.LocalNode
 import juju.kernel.{RoleApp, RoleAppPropsFactory}
-import juju.messages.Boot
+import juju.messages.{Command, Boot}
 import spray.can.Http
 
 
@@ -54,6 +54,12 @@ class RealWorldBackendApp(_appname: String, _role: String) extends RealWorldBack
 class RealWorldFrontendApp(_appname: String, _role: String) extends RealWorldFrontend with LocalNode with RoleApp {
   override val role: String = _role
   override def appname: String = _appname
+
+  override val busGateway: ActorRef = context.actorOf(Props(new Actor with ActorLogging {
+    override def receive: Actor.Receive = {
+      case command : Command => log.info(s"received command $command")
+    }
+  }))
 }
 
 class FakeApp(_appname: String, _role: String) extends Actor with ActorLogging with RoleApp {

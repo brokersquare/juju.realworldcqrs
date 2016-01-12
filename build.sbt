@@ -14,21 +14,23 @@ resolvers ++= Seq(
 )
 
 libraryDependencies ++= {
-  val Juju           = "4bff46b090"
+  val Juju           = "aa74df2951"
   val ScalaReflect   = "2.11.7"
   val Akka           = "2.4.1"
   val Spray          = "1.3.3"
   val ScalaLogging   = "3.1.0"
   val ReactiveX      = "0.25.0"
   Seq(
-    "com.github.brokersquare" % "juju" % Juju intransitive(),
+    "com.github.brokersquare.juju" %% "juju-core" % Juju intransitive(),
+    "com.github.brokersquare.juju" %% "juju-cluster" % Juju intransitive(),
+    "com.github.brokersquare.juju" %% "juju-http" % Juju intransitive(),
     "org.scala-lang" % "scala-reflect" % ScalaReflect,
     "com.typesafe.akka" %% "akka-actor" % Akka,
     "com.typesafe.akka" %% "akka-persistence" % Akka,
     "io.spray" %% "spray-can" % Spray,
     "io.spray" %% "spray-routing" % Spray,
-    "io.spray" %% "spray-client" % Spray/*,
-    "io.spray" %% "spray-testkit" % Spray % "test",*/
+    "io.spray" %% "spray-client" % Spray,
+    "io.spray" %% "spray-testkit" % Spray % "test"/*,*/
     /*,
     "com.typesafe.akka" %% "akka-slf4j" % Akka,
     "io.reactivex" %% "rxscala" % ReactiveX,
