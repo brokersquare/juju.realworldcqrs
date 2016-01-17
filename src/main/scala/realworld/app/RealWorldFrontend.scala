@@ -11,7 +11,7 @@ abstract class RealWorldFrontend extends Frontend {
 override val apiRoute : Route =
   pathPrefix("api") {
     post {
-     path("book") {handleCommand[CreateBook]} ~ path("manager") {handleCommand[CreateManager]} ~ path("order") {handleCommand[PlaceOrder]}
+     path("book") {commandGatewayRoute[CreateBook]} ~ path("manager") {commandGatewayRoute[CreateManager]} ~ path("order") {commandGatewayRoute[PlaceOrder]}
     }
   }
 }

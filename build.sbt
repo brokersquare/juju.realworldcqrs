@@ -14,10 +14,11 @@ resolvers ++= Seq(
 )
 
 libraryDependencies ++= {
-  val Juju           = "aa74df2951"
+  val Juju           = "d93d2b5bba"//"bac38d0d9b"
   val ScalaReflect   = "2.11.7"
   val Akka           = "2.4.1"
   val Spray          = "1.3.3"
+  val SprayJson      = "1.3.2"
   val ScalaLogging   = "3.1.0"
   val ReactiveX      = "0.25.0"
   Seq(
@@ -29,6 +30,7 @@ libraryDependencies ++= {
     "com.typesafe.akka" %% "akka-persistence" % Akka,
     "io.spray" %% "spray-can" % Spray,
     "io.spray" %% "spray-routing" % Spray,
+    "io.spray" %%  "spray-json" % SprayJson,
     "io.spray" %% "spray-client" % Spray,
     "io.spray" %% "spray-testkit" % Spray % "test"/*,*/
     /*,

@@ -1,15 +1,17 @@
 package realworld.app
 
-import akka.actor.{Props, Actor, ActorRef, ActorLogging}
+import akka.actor.{Actor, ActorLogging}
 import akka.io.IO
 import com.typesafe.config.ConfigFactory
+import juju.infrastructure.CommandProxyFactory
+import juju.infrastructure.cluster.ClusterCommandProxyFactory
 import juju.infrastructure.local.LocalNode
-import juju.kernel.{RoleApp, RoleAppPropsFactory}
-import juju.messages.{Command, Boot}
+import juju.kernel.{Module, ModulePropsFactory}
+import juju.messages.Boot
 import spray.can.Http
 
 
-object RealWorldBootstrapper extends juju.kernel.Bootstrapper {
+object RealWorldApp extends juju.kernel.App {
   override def banner = """
 ===============================================================================================================================
                                                                             __                                    __        __
@@ -26,9 +28,9 @@ object RealWorldBootstrapper extends juju.kernel.Bootstrapper {
   \$$$$$$           \$$$$$$
 ===============================================================================================================================
                        """
-  val fakeFactory = new RoleAppPropsFactory[FakeApp]{}
-  val backendFactory = new RoleAppPropsFactory[RealWorldBackendApp]{}
-  val frontendFactory = new RoleAppPropsFactory[RealWorldFrontendApp]{}
+  val fakeFactory = new ModulePropsFactory[FakeModule]{}
+  val backendFactory = new ModulePropsFactory[RealWorldBackendModule]{}
+  val frontendFactory = new ModulePropsFactory[RealWorldFrontendModule]{}
 
   registerApp("fake", fakeFactory)
   registerApp("backend", backendFactory)
@@ -46,23 +48,19 @@ object RealWorldBootstrapper extends juju.kernel.Bootstrapper {
   })
 }
 
-class RealWorldBackendApp(_appname: String, _role: String) extends RealWorldBackend with LocalNode with RoleApp {
+class RealWorldBackendModule(_appname: String, _role: String) extends RealWorldBackend with LocalNode with Module {
   override val role: String = _role
   override def appname: String = _appname
 }
 
-class RealWorldFrontendApp(_appname: String, _role: String) extends RealWorldFrontend with LocalNode with RoleApp {
+class RealWorldFrontendModule(_appname: String, _role: String) extends RealWorldFrontend with LocalNode with Module {
   override val role: String = _role
   override def appname: String = _appname
 
-  override val busGateway: ActorRef = context.actorOf(Props(new Actor with ActorLogging {
-    override def receive: Actor.Receive = {
-      case command : Command => log.info(s"received command $command")
-    }
-  }))
+  override val commandProxyFactory: CommandProxyFactory = new ClusterCommandProxyFactory(useRole=Some(role))(context.system)
 }
 
-class FakeApp(_appname: String, _role: String) extends Actor with ActorLogging with RoleApp {
+class FakeModule(_appname: String, _role: String) extends Actor with ActorLogging with Module {
   override val appname: String = _appname
   override val role: String = _role
 
