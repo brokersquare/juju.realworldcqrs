@@ -14,28 +14,23 @@ resolvers ++= Seq(
 )
 
 libraryDependencies ++= {
-  val Juju           = "d93d2b5bba"//"bac38d0d9b"
+  val Juju           = "bb8806eec8"
   val ScalaReflect   = "2.11.7"
   val Akka           = "2.4.1"
+  val AkkaHttp       = "2.0.2"
   val Spray          = "1.3.3"
   val SprayJson      = "1.3.2"
   val ScalaLogging   = "3.1.0"
   val ReactiveX      = "0.25.0"
   Seq(
-    "com.github.brokersquare.juju" %% "juju-core" % Juju intransitive(),
-    "com.github.brokersquare.juju" %% "juju-cluster" % Juju intransitive(),
+    "com.github.brokersquare.juju" %% "juju-core" % Juju,
+    "com.github.brokersquare.juju" %% "juju-cluster" % Juju,
     "com.github.brokersquare.juju" %% "juju-http" % Juju intransitive(),
     "org.scala-lang" % "scala-reflect" % ScalaReflect,
     "com.typesafe.akka" %% "akka-actor" % Akka,
     "com.typesafe.akka" %% "akka-persistence" % Akka,
-    "io.spray" %% "spray-can" % Spray,
-    "io.spray" %% "spray-routing" % Spray,
-    "io.spray" %%  "spray-json" % SprayJson,
-    "io.spray" %% "spray-client" % Spray,
-    "io.spray" %% "spray-testkit" % Spray % "test"/*,*/
-    /*,
-    "com.typesafe.akka" %% "akka-slf4j" % Akka,
-    "io.reactivex" %% "rxscala" % ReactiveX,
-    "com.typesafe.scala-logging" %% "scala-logging" % ScalaLogging*/
+    "com.typesafe.akka" %% "akka-http-core-experimental" % AkkaHttp,
+    "com.typesafe.akka" %% "akka-http-experimental" % AkkaHttp,
+    "com.typesafe.akka" %% "akka-http-spray-json-experimental" % AkkaHttp
   )
 }

@@ -1,14 +1,9 @@
 package realworld.app
 
-import akka.actor.{Actor, ActorLogging}
-import akka.io.IO
-import com.typesafe.config.ConfigFactory
+import com.typesafe.config.{Config, ConfigFactory}
 import juju.infrastructure.CommandProxyFactory
-import juju.infrastructure.cluster.ClusterCommandProxyFactory
-import juju.infrastructure.local.LocalNode
+import juju.infrastructure.cluster.{ClusterCommandProxyFactory, ClusterNode}
 import juju.kernel.{Module, ModulePropsFactory}
-import juju.messages.Boot
-import spray.can.Http
 
 
 object RealWorldApp extends juju.kernel.App {
@@ -28,43 +23,39 @@ object RealWorldApp extends juju.kernel.App {
   \$$$$$$           \$$$$$$
 ===============================================================================================================================
                        """
-  val fakeFactory = new ModulePropsFactory[FakeModule]{}
   val backendFactory = new ModulePropsFactory[RealWorldBackendModule]{}
   val frontendFactory = new ModulePropsFactory[RealWorldFrontendModule]{}
 
-  registerApp("fake", fakeFactory)
   registerApp("backend", backendFactory)
 
-  val frontendConfig = defaultConfig
-    .withFallback(ConfigFactory.parseString("service.host = localhost"))
-    .withFallback(ConfigFactory.parseString("service.port = 8080"))
+  lazy val frontendConfig = buildFrontendConfig()
 
-  registerApp("frontend", frontendFactory, frontendConfig, (system, app) => {
-    val config = system.settings.config
-    implicit val s = system
-    val host = config.getString("service.host")
-    val port = config.getInt("service.port")
-    IO(Http) ! Http.Bind(app, interface = host, port = port)
-  })
-}
+  registerApp("frontend", frontendFactory, frontendConfig)
 
-class RealWorldBackendModule(_appname: String, _role: String) extends RealWorldBackend with LocalNode with Module {
-  override val role: String = _role
-  override def appname: String = _appname
-}
+  private def buildFrontendConfig(): Config = {
+    import scala.collection.JavaConverters._
+    val configuredRoles = defaultConfig.getStringList("akka.cluster.roles").asScala.toList
+    val composed = defaultConfig
+      .withFallback(ConfigFactory.parseString("service.host = localhost"))
+      .withFallback(ConfigFactory.parseString("service.port = 3500"))
 
-class RealWorldFrontendModule(_appname: String, _role: String) extends RealWorldFrontend with LocalNode with Module {
-  override val role: String = _role
-  override def appname: String = _appname
-
-  override val commandProxyFactory: CommandProxyFactory = new ClusterCommandProxyFactory(useRole=Some(role))(context.system)
-}
-
-class FakeModule(_appname: String, _role: String) extends Actor with ActorLogging with Module {
-  override val appname: String = _appname
-  override val role: String = _role
-
-  override def receive: Receive = {
-    case Boot => log.info("fake app started!!")
+    if (configuredRoles.size == 1) {
+      composed
+    } else {
+      ConfigFactory.parseString("akka.remote.netty.tcp.port = 0")
+      .withFallback(composed)
+    }
   }
 }
+
+class RealWorldBackendModule(_appname: String, _role: String) extends RealWorldBackend with ClusterNode with Module {
+  override val role: String = _role
+  override def appname: String = _appname
+}
+
+class RealWorldFrontendModule(_appname: String, _role: String) extends RealWorldFrontend with ClusterNode with Module {
+  override val role: String = _role
+  override def appname: String = _appname
+
+  val commandProxyFactory: CommandProxyFactory = new ClusterCommandProxyFactory(useRole=Some(role))(context.system)
+ }
