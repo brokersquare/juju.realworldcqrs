@@ -9,12 +9,11 @@ scalaVersion  := "2.11.7"
 scalacOptions := Seq("-language:postfixOps", "-feature", "-deprecation", "-language:implicitConversions")
 
 resolvers ++= Seq(
-    "jitpack" at "https://jitpack.io",
-    "spray repo" at "http://repo.spray.io"
+    "jitpack" at "https://jitpack.io"
 )
 
 libraryDependencies ++= {
-  val Juju           = "bb8806eec8"
+  val Juju           = "078d413538"
   val ScalaReflect   = "2.11.7"
   val Akka           = "2.4.1"
   val AkkaHttp       = "2.0.2"

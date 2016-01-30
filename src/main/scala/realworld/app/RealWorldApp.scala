@@ -58,4 +58,4 @@ class RealWorldFrontendModule(_appname: String, _role: String) extends RealWorld
   override def appname: String = _appname
 
   val commandProxyFactory: CommandProxyFactory = new ClusterCommandProxyFactory(useRole=Some(role))(context.system)
- }
+}

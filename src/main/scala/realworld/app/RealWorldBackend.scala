@@ -10,7 +10,4 @@ abstract class RealWorldBackend extends Backend with DefaultBackendConfig {
   registerAggregate[Manager]()
 
   registerSaga[OrderProcessor]()
-
-  override def activate(): Unit = ()
-  override def scheduleWakeUpMessages(): Unit = ()
 }
