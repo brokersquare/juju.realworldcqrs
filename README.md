@@ -13,3 +13,11 @@ The sample demonstrates the following [juju](https://github.com/brokersquare/juj
 - Build a docker image with real world cqrs artifacts
 - Run the application and all the infrastructure components (kafka, Elasticsearch, Kibana, Grafana) with docker compose
 
+## Technology stack:
+
+- Scala 2.11.7
+- Sbt 0.13.7
+- Akka 2.4.1
+- Kafka 0.8.2
+- Kamon.io 0.5.2
+- Elasticsearch N/A
