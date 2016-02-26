@@ -10,5 +10,6 @@ The sample demonstrates the following [juju](https://github.com/brokersquare/juj
 - Persist aggregates domain events to kafka
 - Consume events from Spark and produce denormalized views to elastic search
 - Monitor metrics with Grafana and views with Kibana
+- Build a docker image with real world cqrs artifacts
 - Run the application and all the infrastructure components (kafka, Elasticsearch, Kibana, Grafana) with docker compose
 
